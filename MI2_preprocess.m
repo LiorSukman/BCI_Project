@@ -1,4 +1,4 @@
-function [] = MI2_preprocess(recordingFolder)
+function [] = MI2_preprocess(recordingFolder,ToolboxFolder,destFolder)
 %% Offline Preprocessing
 % Assumes recorded using Lab Recorder.
 % Make sure you have EEGLAB installed with ERPLAB & loadXDF plugins.
@@ -17,11 +17,11 @@ function [] = MI2_preprocess(recordingFolder)
 % so on - but please cite properly if published.
 
 %% Some parameters (this needs to change according to your system):
-addpath 'C:\Toolboxes\eeglab2020_0'           % update to your own computer path
+addpath([ToolboxFolder, '\eeglab2021.1'])           % update to your own computer path
 eeglab;                                     % open EEGLAB 
 highLim = 40;                               % filter data under 40 Hz
 lowLim = 0.5;                               % filter data above 0.5 Hz
-recordingFile = strcat(recordingFolder,'/EEG.XDF');
+recordingFile = strcat(recordingFolder,'\EEG.XDF');
 
 % (1) Load subject data (assume XDF)
 EEG = pop_loadxdf(recordingFile, 'streamtype', 'EEG', 'exclude_markerstreams', {});
@@ -56,6 +56,26 @@ EEG = eeg_checkset( EEG );
 EEG  = pop_basicfilter( EEG,  1:15 , 'Boundary', 'boundary', 'Cutoff',  50, 'Design', 'notch', 'Filter', 'PMnotch', 'Order',  180 );
 EEG = eeg_checkset( EEG );
 
+% Laplace
+% C3 is surrounding by FC1, FC5, CP1, CP5:
+C3 = EEG.data(1,:);
+FC1 = EEG.data(4,:);
+FC5 = EEG.data(6,:);
+CP1 = EEG.data(8,:);
+CP5 = EEG.data(10,:);
+
+EEG.data(1,:) = C3 - 0.25*(FC1+FC5+CP1+CP5);
+
+% C4 is surrounding by FC2, FC6, CP2, CP6:
+C4 = EEG.data(2,:);
+FC2 = EEG.data(5,:);
+FC6 = EEG.data(7,:);
+CP2 = EEG.data(9,:);
+CP6 = EEG.data(11,:);
+
+EEG.data(2,:) = C4 - 0.25*(FC2+FC6+CP2+CP6);
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%% (5) Add advanced artifact removal functions %%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -63,8 +83,8 @@ EEG = eeg_checkset( EEG );
 % Save the data into .mat variables on the computer
 EEG_data = EEG.data;            % Pre-processed EEG data
 EEG_event = EEG.event;          % Saved markers for sorting the data
-save(strcat(recordingFolder,'/','cleaned_sub.mat'),'EEG_data');
-save(strcat(recordingFolder,'/','EEG_events.mat'),'EEG_event');
-save(strcat(recordingFolder,'/','EEG_chans.mat'),'EEG_chans');
+save(strcat(destFolder,'\','cleaned_sub.mat'),'EEG_data');
+save(strcat(destFolder,'\','EEG_events.mat'),'EEG_event');
+save(strcat(destFolder,'\','EEG_chans.mat'),'EEG_chans');
                 
 end
