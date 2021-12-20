@@ -19,21 +19,16 @@ if __name__ == "__main__":
     # Load data
     X_train, y_train, X_test, y_test = ML_util.load_dataset(PATH)
 
-    n_train = len(X_train)
-    n_test = len(X_test)
-
     # Define parameters to check in the grid search, Note that we use logarithmic scales!
     gammas = np.logspace(min_gamma, max_gamma, num_gamma)
     cs = np.logspace(min_c, max_c, num_c)
 
-    print()
     parameters = {'C': cs, 'gamma': gammas}
 
     # Initialize RF model with constant parameters (seed for reproducability and class weight for unbalanced datasets)
     model = svm.SVC(kernel='linear', random_state=SEED, class_weight='balanced')
 
     clf = ML_util.run_gs(model, parameters, X_train, y_train, NFOLD, SEED)
-    print(clf.best_params_)
 
     ML_util.asses_model(clf, X_test, y_test)  # evaluate the model
 

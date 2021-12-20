@@ -22,12 +22,13 @@ def asses_model(clf, test, y_test):
             c_cor += 1 if p == y else 0
 
     print(f"General accuracy on test set is {100 * cor / len(y_test)}%")
-    print(f"Accuracy for class A is {100 * a_cor / class_a_total}%")
-    print(f"Accuracy for class B is {100 * b_cor / class_b_total}%")
-    print(f"Accuracy for class C is {100 * c_cor / class_c_total}%")
+    print(f"Accuracy for LEFT class is {100 * a_cor / class_a_total}%")
+    print(f"Accuracy for RIGHT class is {100 * b_cor / class_b_total}%")
+    print(f"Accuracy for IDLE class is {100 * c_cor / class_c_total}%")
 
 
 def load_dataset(path):
+    print('Loading data...\n')
     X_train = io.loadmat(path + 'FeaturesTrainSelected.mat')['FeaturesTrainSelected']
     y_train = io.loadmat(path + 'LabelTrain.mat')['LabelTrain'].flatten()
     X_test = io.loadmat(path + 'FeaturesTest.mat')['FeaturesTest']
@@ -38,10 +39,11 @@ def load_dataset(path):
 def run_gs(model, parameters, X_train, y_train, nfold, seed):
     # Define grid search object with the possible parameters and an N-fold (5) stratified cross validation
     gs = GridSearchCV(model, parameters, cv=StratifiedKFold(n_splits=nfold, shuffle=True, random_state=seed), verbose=0)
-    print('Starting grid search...')
+    print('Starting grid search...\n')
     start = time.time()
     clf = gs.fit(X_train, y_train)  # Actually running the GS
     end = time.time()
     print('Grid search completed in %.2f seconds, best parameters are:' % (end - start))
+    print(clf.best_params_)
 
     return clf

@@ -25,9 +25,6 @@ if __name__ == "__main__":
     # Load data
     X_train, y_train, X_test, y_test = ML_util.load_dataset(PATH)
 
-    n_train = len(X_train)
-    n_test = len(X_test)
-
     # Define parameters to check in the grid search, Note that we use logarithmic scales!
     n_estimatorss = np.logspace(n_estimators_min, n_estimators_max, n_estimators_num).astype('int')
     max_depths = np.logspace(max_depth_min, max_depth_max, max_depth_num).astype('int')
@@ -36,7 +33,6 @@ if __name__ == "__main__":
     min_samples_leafs = np.logspace(min_samples_leafs_min, min_samples_leafs_max, min_samples_leafs_num, base=2).astype(
         'int')
 
-    print()
     parameters = {'n_estimators': n_estimatorss, 'max_depth': max_depths, 'min_samples_split': min_samples_splits,
                   'min_samples_leaf': min_samples_leafs}  # organize options in a dictionary
 
@@ -44,7 +40,6 @@ if __name__ == "__main__":
     model = RandomForestClassifier(random_state=SEED, class_weight='balanced')
 
     clf = ML_util.run_gs(model, parameters, X_train, y_train, NFOLD, SEED)
-    print(clf.best_params_)
 
     ML_util.asses_model(clf, X_test, y_test)  # evaluate the model
 
