@@ -24,19 +24,19 @@ min_samples_leafs_max = 5
 min_samples_leafs_num = 6
 
 def asses_model(clf, test, y_test):
-    preds = clf.predict(test)
-    cor, a_cor, b_cor, c_cor = [0] * 4
-    class_a_total = np.count_nonzero(y_test == 0)
-    class_b_total = np.count_nonzero(y_test == 1)
-    class_c_total = np.count_nonzero(y_test == 2)
+    preds = clf.predict(test)  # get predictions according to the trained model
+    cor, a_cor, b_cor, c_cor = [0] * 4  # initialize all counters with 0
+    class_a_total = np.count_nonzero(y_test == 1)  # Left
+    class_b_total = np.count_nonzero(y_test == 2)  # Right
+    class_c_total = np.count_nonzero(y_test == 3)  # Idle
     for p, y in zip(preds, y_test):
         if p == y:
             cor += 1
-        if y == 0:
+        if y == 1:  # class A (left)
             a_cor += 1 if p == y else 0
-        elif y == 1:
+        elif y == 2:  # class B (right)
             b_cor += 1 if p == y else 0
-        else:
+        else:  # class C (idle)
             c_cor += 1 if p == y else 0
 
     print(f"General accuracy on test set is {100 * cor / len(y_test)}%")
@@ -46,14 +46,16 @@ def asses_model(clf, test, y_test):
 
 
 if __name__ == "__main__":
+    # Load data
     X_train = io.loadmat(PATH + 'FeaturesTrainSelected.mat')['FeaturesTrainSelected']
-    y_train = io.loadmat(PATH + 'LabelTrain.mat')['LabelTrain'].T
+    y_train = io.loadmat(PATH + 'LabelTrain.mat')['LabelTrain'].flatten()
     X_test = io.loadmat(PATH + 'FeaturesTest.mat')['FeaturesTest']
-    y_test = io.loadmat(PATH + 'LabelTest.mat')['LabelTest'].T
+    y_test = io.loadmat(PATH + 'LabelTest.mat')['LabelTest'].flatten()
 
     n_train = len(X_train)
     n_test = len(X_test)
 
+    # Define parameters to check in the grid search, Note that we use logarithmic scales!
     n_estimatorss = np.logspace(n_estimators_min, n_estimators_max, n_estimators_num).astype('int')
     max_depths = np.logspace(max_depth_min, max_depth_max, max_depth_num).astype('int')
     min_samples_splits = np.logspace(min_samples_splits_min, min_samples_splits_max, min_samples_splits_num,
@@ -63,12 +65,16 @@ if __name__ == "__main__":
 
     print()
     parameters = {'n_estimators': n_estimatorss, 'max_depth': max_depths, 'min_samples_split': min_samples_splits,
-                  'min_samples_leaf': min_samples_leafs}
+                  'min_samples_leaf': min_samples_leafs}  # organize options in a dictionary
+
+    # Initialize RF model with constant parameters (seed for reproducability and class weight for unbalanced datasets)
     model = RandomForestClassifier(random_state=SEED, class_weight='balanced')
+
+    # Define grid search object with the possible parameters and an N-fold (5) stratified cross validation
     gs = GridSearchCV(model, parameters, cv=StratifiedKFold(n_splits=NFOLD, shuffle=True, random_state=SEED), verbose=0)
     print('Starting grid search...')
     start = time.time()
-    clf = gs.fit(features, labels)
+    clf = gs.fit(X_train, y_train)  # Actually running the GS
     end = time.time()
     print('Grid search completed in %.2f seconds, best parameters are:' % (end - start))
     print(clf.best_params_)
@@ -77,7 +83,6 @@ if __name__ == "__main__":
     max_depth = gs.best_params_['max_depth']
     min_samples_split = gs.best_params_['min_samples_split']
     min_samples_leaf = gs.best_params_['min_samples_leaf']
-    print('Best hyperparameters are:', gs.best_params_)
 
-    asses_model(clf, test, y_test)
+    asses_model(clf, X_test, y_test)  # evaluate the model
 
