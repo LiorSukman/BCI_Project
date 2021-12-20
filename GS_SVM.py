@@ -32,3 +32,6 @@ if __name__ == "__main__":
 
     ML_util.asses_model(clf, X_test, y_test)  # evaluate the model
 
+    fig, ax = plt.subplots()
+    ML_util.plot_cf(clf, X_test, y_test, ax)
+

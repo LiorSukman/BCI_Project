@@ -1,5 +1,7 @@
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
+import matplotlib.pyplot as plt
+
 
 import ML_util
 
@@ -42,4 +44,7 @@ if __name__ == "__main__":
     clf = ML_util.run_gs(model, parameters, X_train, y_train, NFOLD, SEED)
 
     ML_util.asses_model(clf, X_test, y_test)  # evaluate the model
+
+    fig, ax = plt.subplots()
+    ML_util.plot_cf(clf, X_test, y_test, ax)
 

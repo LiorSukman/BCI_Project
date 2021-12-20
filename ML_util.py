@@ -3,6 +3,8 @@ import numpy as np
 import scipy.io as io
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import plot_confusion_matrix
+import matplotlib.pyplot as plt
 
 
 def asses_model(clf, test, y_test):
@@ -47,3 +49,9 @@ def run_gs(model, parameters, X_train, y_train, nfold, seed):
     print(clf.best_params_)
 
     return clf
+
+def plot_cf(clf, X_test, y_test, ax):
+    labels = ['Left', 'Right', 'Idle']
+    plot_confusion_matrix(clf, X_test, y_test, ax=ax, display_labels=labels)
+    plt.show()
+
