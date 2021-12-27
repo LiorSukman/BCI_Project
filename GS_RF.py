@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import ML_util
 
 PATH = "./data/"
-NFOLD = 5
+NFOLD = 2
 SEED = 0
 
 n_estimators_min = 0
@@ -45,6 +45,5 @@ if __name__ == "__main__":
 
     ML_util.asses_model(clf, X_test, y_test)  # evaluate the model
 
-    fig, ax = plt.subplots()
-    ML_util.plot_cf(clf, X_test, y_test, ax)
+    _ = ML_util.plot_cf(clf, X_test, y_test)
 

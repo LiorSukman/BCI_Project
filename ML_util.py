@@ -1,6 +1,7 @@
 import time
 import numpy as np
 import scipy.io as io
+import sklearn
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import plot_confusion_matrix
@@ -50,8 +51,14 @@ def run_gs(model, parameters, X_train, y_train, nfold, seed):
 
     return clf
 
-def plot_cf(clf, X_test, y_test, ax):
-    labels = ['Left', 'Right', 'Idle']
-    plot_confusion_matrix(clf, X_test, y_test, ax=ax, display_labels=labels)
+
+def plot_cf(clf, X_test, y_test):
+    display_labels = ['Left', 'Right', 'Idle']
+    labels = [1, 2, 3]
+    predictions = clf.predict(X_test)
+    cm = sklearn.metrics.confusion_matrix(y_test, predictions, labels=labels)
+    disply = sklearn.metrics.ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=display_labels)
+    disply.plot()
     plt.show()
+    return disply.ax_
 
