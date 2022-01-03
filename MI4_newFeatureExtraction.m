@@ -1,4 +1,4 @@
-function [SelectedFeatureNames] = MI4_featureExtraction(recordingFolder)
+function MI4_newFeatureExtraction(recordingFolder)
 %% This function extracts features for the machine learning process.
 % Starts by visualizing the data (power spectrum) to find the best powerbands.
 % Next section computes the best common spatial patterns from all available
@@ -7,7 +7,7 @@ function [SelectedFeatureNames] = MI4_featureExtraction(recordingFolder)
 % At the bottom there is a simple feature importance test that chooses the
 % best features and saves them for model training.
 
-error('wtf?!')
+
 %% This code is part of the BCI-4-ALS Course written by Asaf Harel
 % (harelasa@post.bgu.ac.il) in 2021. You are free to use, change, adapt and
 % so on - but please cite properly if published.
@@ -17,7 +17,7 @@ load(strcat(recordingFolder,'EEG_chans.mat'));                  % load the openB
 load(strcat(recordingFolder,'MIData.mat'));                     % load the EEG data
 targetLabels = cell2mat(struct2cell(load(strcat(recordingFolder,'/trainingVec'))));
 
-MIData = MIData(:,1:13,:); %remove extra 3 channels
+MIData = MIData(:,1:13,:);                                      %remove extra 3 channels
 EEG_chans = EEG_chans(1:13,:);
 Features2Select = 10;                                           % number of featuers for feature selection
 
@@ -68,8 +68,8 @@ for chan = 1:numChans
         clear multiPSD psd
     end
 end
-% manually plot (surf) mean spectrogram for channels C4 + C3:
-mySpectrogram(t,spectFreq,totalSpect,numClasses,vizChans,EEG_chans)
+% % manually plot (surf) mean spectrogram for channels C4 + C3:
+% mySpectrogram(t,spectFreq,totalSpect,numClasses,vizChans,EEG_chans)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%% Add your own data visualization here %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -95,8 +95,8 @@ rightIndices = rightIdx(randperm(length(rightIdx)));% randomize right indexs
 leftIndices  = leftIdx(randperm(length(leftIdx)));   % randomize left indexs
 idleIndices  = idleIdx(randperm(length(idleIdx)));   % randomize idle indexs
 minTrials = min([length(leftIndices), length(rightIndices)]);
-percentIdx = floor(0.8*minTrials);                  % this is the 80% part...
-for trial=1:percentIdx
+% percentIdx = floor(0.8*minTrials);                  % this is the 80% part...
+for trial=1:minTrials
     overallLeft = [overallLeft squeeze(MIData(leftIndices(trial),:,:))];
     overallRight = [overallRight squeeze(MIData(rightIndices(trial),:,:))];
 end
@@ -166,13 +166,18 @@ numSpectralFeatures = length(bands);                        % how many features 
 %% Extract features 
 % features_names = [];
 features_names = table;
-names = ["Powerbands1";"Powerbands2";"Powerbands3";"Powerbands4";"Powerbands5";"Powerbands6";"Normalized Pwelch Matrix";"Root Total Power";"Normalized Pwelch Matrix";"Spectral Edge";"Spectral Entropy";"Slope";"Intercept";"Mean Frequency";"Occupied bandwidth";"Power bandwidth"];
-chans = [];
+names = ["Powerbands1";"Powerbands2";"Powerbands3";"Powerbands4";"Powerbands5";"Powerbands6";"Root Total Power";"Normalized Pwelch Matrix";"Spectral Edge";"Spectral Entropy";"Slope";"Intercept";"Mean Frequency";"Occupied bandwidth";"Power bandwidth"];
+chans = [0;0;0];
 for j = 1:numChans
     chans = [chans; repmat(j,length(names),1)];
 end
+%chans2(4:length(chans)+3) = chans;
+%chans2(1:3) = 0;
+names = repmat(names,numChans,1);
+names2(4:length(chans),1) = names;
+names2(1:3) = ["CSP1";"CSP2";"CSP3"];
 features_names.Channel = chans;
-features_names.FeatureName = repmat(names,numChans,1);
+features_names.FeatureName = names2;
 
 
 MIFeaturesLabel = NaN(trials,numChans,numSpectralFeatures); % init features + labels matrix
@@ -269,8 +274,8 @@ for trial = 1:trials                                % run over all the trials
     end
 end
 
-% z-score all the features
-MIFeaturesLabel = zscore(MIFeaturesLabel);
+% % z-score all the features
+% MIFeaturesLabel = zscore(MIFeaturesLabel);
 
 % Reshape into 2-D matrix
 MIFeatures = reshape(MIFeaturesLabel,trials,[]);
@@ -278,39 +283,45 @@ MIFeatures = [CSPFeatures MIFeatures];              % add the CSP features to th
 AllDataInFeatures = MIFeatures;
 save(strcat(recordingFolder,'/AllDataInFeatures.mat'),'AllDataInFeatures');
 
-testIdx = randperm(length(idleIdx),num4test);                       % picking test index randomly
-testIdx = [idleIdx(testIdx) leftIdx(testIdx) rightIdx(testIdx)];    % taking the test index from each class
-testIdx = sort(testIdx);                                            % sort the trials
+Features = MIFeatures;
+Labels = targetLabels;
 
-% split test data
-FeaturesTest = MIFeatures(testIdx,:,:);     % taking the test trials features from each class
-LabelTest = targetLabels(testIdx);          % taking the test trials labels from each class
-
-% split train data
-FeaturesTrain = MIFeatures;
-FeaturesTrain (testIdx ,:,:) = [];          % delete the test trials from the features matrix, and keep only the train trials
-LabelTrain = targetLabels;
-LabelTrain(testIdx) = [];                   % delete the test trials from the labels matrix, and keep only the train labels
+% testIdx = randperm(length(idleIdx),num4test);                       % picking test index randomly
+% testIdx = [idleIdx(testIdx) leftIdx(testIdx) rightIdx(testIdx)];    % taking the test index from each class
+% testIdx = sort(testIdx);                                            % sort the trials
+% 
+% % split test data
+% FeaturesTest = MIFeatures(testIdx,:,:);     % taking the test trials features from each class
+% LabelTest = targetLabels(testIdx);          % taking the test trials labels from each class
+% 
+% % split train data
+% FeaturesTrain = MIFeatures;
+% FeaturesTrain (testIdx ,:,:) = [];          % delete the test trials from the features matrix, and keep only the train trials
+% LabelTrain = targetLabels;
+% LabelTrain(testIdx) = [];                   % delete the test trials from the labels matrix, and keep only the train labels
 
 %% Feature Selection (using neighborhood component analysis)
-class = fscnca(FeaturesTrain,LabelTrain);   % feature selection
-% sorting the weights in desending order and keeping the indexs
-[~,selected] = sort(class.FeatureWeights,'descend');
-% taking only the specified number of features with the largest weights
-SelectedIdx = selected(1:Features2Select);
-FeaturesTrainSelected = FeaturesTrain(:,SelectedIdx);       % updating the matrix feature
-FeaturesTest = FeaturesTest(:,SelectedIdx);                 % updating the matrix feature
-SelectedFeatureNames = features_names(SelectedIdx,:);
-% saving
-save(strcat(recordingFolder,'/FeaturesTrain.mat'),'FeaturesTrain');
-save(strcat(recordingFolder,'/FeaturesTrainSelected.mat'),'FeaturesTrainSelected');
-save(strcat(recordingFolder,'/FeaturesTest.mat'),'FeaturesTest');
-save(strcat(recordingFolder,'/SelectedIdx.mat'),'SelectedIdx');
-save(strcat(recordingFolder,'/LabelTest.mat'),'LabelTest');
-save(strcat(recordingFolder,'/LabelTrain.mat'),'LabelTrain');
+% class = fscnca(FeaturesTrain,LabelTrain);   % feature selection
+% % sorting the weights in desending order and keeping the indexs
+% [~,selected] = sort(class.FeatureWeights,'descend');
+% % taking only the specified number of features with the largest weights
+% SelectedIdx = selected(1:Features2Select);
+% FeaturesTrainSelected = FeaturesTrain(:,SelectedIdx);       % updating the matrix feature
+% FeaturesTest = FeaturesTest(:,SelectedIdx);                 % updating the matrix feature
+% SelectedFeatureNames = features_names(SelectedIdx,:);
 
-save(strcat(recordingFolder,'/SelectedFeatureNames.mat'),'SelectedFeatureNames');
+% saving
+save(strcat(recordingFolder,'/Features.mat'),'Features');
+save(strcat(recordingFolder,'/Labels.mat'),'Labels');
 save(strcat(recordingFolder,'/FeatureNames.mat'),'features_names');
+
+% save(strcat(recordingFolder,'/FeaturesTrainSelected.mat'),'FeaturesTrainSelected');
+% save(strcat(recordingFolder,'/FeaturesTest.mat'),'FeaturesTest');
+% save(strcat(recordingFolder,'/SelectedIdx.mat'),'SelectedIdx');
+% save(strcat(recordingFolder,'/LabelTest.mat'),'LabelTest');
+%save(strcat(recordingFolder,'/SelectedFeatureNames.mat'),'SelectedFeatureNames');
+
+
 
 disp('Successfuly extracted features!');
 
