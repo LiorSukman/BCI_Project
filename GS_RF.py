@@ -23,7 +23,8 @@ min_samples_leafs_num = 6
 
 if __name__ == "__main__":
     # Load data
-    X_train, y_train, X_test, y_test = ML_util.load_dataset(PATH)
+    # X_train, y_train, X_test, y_test = ML_util.load_dataset(PATH)
+    X_train, y_train, X_test, y_test, _, _ = ML_util.load_pipeline(PATH)
 
     n_train = len(X_train)
     n_test = len(X_test)
@@ -40,7 +41,7 @@ if __name__ == "__main__":
     parameters = {'n_estimators': n_estimatorss, 'max_depth': max_depths, 'min_samples_split': min_samples_splits,
                   'min_samples_leaf': min_samples_leafs}  # organize options in a dictionary
 
-    # Initialize RF model with constant parameters (seed for reproducability and class weight for unbalanced datasets)
+    # Initialize RF model with constant parameters (seed for reproducibility and class weight for unbalanced datasets)
     model = RandomForestClassifier(random_state=SEED, class_weight='balanced')
 
     clf = ML_util.run_gs(model, parameters, X_train, y_train, NFOLD, SEED)
