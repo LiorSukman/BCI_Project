@@ -23,11 +23,11 @@ min_samples_leafs_num = 6
 
 if __name__ == "__main__":
     # Load data
-    # X_train, y_train, X_test, y_test = ML_util.load_dataset(PATH)
-    X_train, y_train, X_test, y_test, _, _ = ML_util.load_pipeline(PATH)
+    x_train, y_train, x_test, y_test = ML_util.load_dataset(PATH)
+    # x_train, y_train, x_test, y_test, _, _ = ML_util.load_pipeline(PATH)
 
-    n_train = len(X_train)
-    n_test = len(X_test)
+    n_train = len(x_train)
+    n_test = len(x_test)
 
     # Define parameters to check in the grid search, Note that we use logarithmic scales!
     n_estimatorss = np.logspace(n_estimators_min, n_estimators_max, n_estimators_num).astype('int')
@@ -44,8 +44,9 @@ if __name__ == "__main__":
     # Initialize RF model with constant parameters (seed for reproducibility and class weight for unbalanced datasets)
     model = RandomForestClassifier(random_state=SEED, class_weight='balanced')
 
-    clf = ML_util.run_gs(model, parameters, X_train, y_train, NFOLD, SEED)
+    clf = ML_util.run_gs(model, parameters, x_train, y_train, NFOLD, SEED)
     print(clf.best_params_)
 
-    ML_util.asses_model(clf, X_test, y_test)  # evaluate the model
+    ML_util.asses_model(clf, x_test, y_test)  # evaluate the model
 
+    ML_util.plot_cf(clf, x_test, y_test)
