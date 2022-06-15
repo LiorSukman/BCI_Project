@@ -23,14 +23,14 @@ recordingFolder = strcat(rootFolder,'\Sub',num2str(subID),'\');
 mkdir(recordingFolder);
 
 % Define times
-InitWait = 5;                           % before trials prep time
+InitWait = 1;                           % before trials prep time
 trialLength = 5;                        % each trial length in seconds 
 cueLength = 1;                          % time for each cue
 readyLength = 1;                        % time "ready" on screen
 nextLength = 1;                         % time "next" on screen
 
 % Define length and classes
-numTrials = 10;                         % set number of training trials per class (the more classes, the more trials per class)
+numTrials = 5;                         % set number of training trials per class (the more classes, the more trials per class)
 numClasses = 3;                         % set number of possible classes
 
 % Set markers / triggers names

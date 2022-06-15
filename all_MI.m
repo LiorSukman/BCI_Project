@@ -4,8 +4,9 @@
 % recordingFolder should be with '\' at the end
 % destFolder = recordingFolder
 
-% recordingFolder ='C:\Recordings\Sub3\sub-P001\ses-S002\eeg\'
-% ToolboxFolder = 'C:\Users\ronig\Documents\University\PhD\Courses\BCI4ALS'
+% recordingFolder ='C:\Recordings\Sub3\sub-P001\ses-S002\eeg\';
+% ToolboxFolder = 'C:\Users\ronig\Documents\University\PhD\Courses\BCI4ALS';
+% destFolder = recordingFolder;
 
 function all_MI(ToolboxFolder,recordingFolder,destFolder)
 MI2_preprocess(recordingFolder,ToolboxFolder,destFolder);

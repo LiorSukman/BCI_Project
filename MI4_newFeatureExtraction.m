@@ -267,6 +267,9 @@ for trial = 1:trials                                % run over all the trials
         disp(strcat('Extracted Occupied bandwidth from electrode:',EEG_chans(channel,:)))
                
         % Power bandwidth
+        if chan == 13
+            continue
+        end
         MIFeaturesLabel(trial,channel,n) = powerbw(normlizedMatrix,Fs);
         n = n + 1;
         disp(strcat('Extracted Power bandwidth from electrode:',EEG_chans(channel,:)))
