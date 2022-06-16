@@ -1,8 +1,24 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+import pathlib
 import seaborn as sns
 
 from config import DirPath
+
+
+def concatenate_files(files: list) -> pd.DataFrame:
+    """
+    :param p: The file's path
+    :param files: list of the files
+    :return: concatenated data (Dataframe)
+    """
+    for i, f in enumerate(files):
+        if i == 0:
+            dat = pd.read_csv(f)
+        else:
+            dat = pd.concat([dat, pd.read_csv(f)])
+    return dat
+
 
 class DataLoader:
     def __init__(self, train=True, x_mean=None, x_std=None, norm=True):
@@ -18,12 +34,24 @@ class DataLoader:
         self.norm = norm
 
     def prepare_data(self):
+        """
+        loads data, normalized if required
+        """
         self.load_x_y()
         if self.norm:
             self.norm_data()
 
     def load_x_y(self):
-        data = pd.read_csv(DirPath().input)
+        """
+        loads X and y
+        """
+        directory = DirPath().train if self.train else DirPath().test
+        p = pathlib.Path(directory)
+        files = list(p.iterdir())
+        if len(files) > 1:
+            data = concatenate_files(files)
+        else:
+            data = pd.read_csv(files[0])
         self.x = data.iloc[:, :-1]
         self.y = pd.Series(data.iloc[:, -1], name='y')
         self.x.columns = [col[:col.find('.')] for col in self.x.columns]
@@ -76,4 +104,3 @@ class DataLoader:
         plt.tight_layout()
         plt.savefig(f'{DirPath().output}/pairs_plot.pdf', transparent=True)
         plt.show()
-
